@@ -8,7 +8,7 @@ class Library:
         self.books = {}
         self.readers = {}
 
-    def addBook(self, title, author, publisher, pages, isBorrowed=False):
+    def addBook(self, title, author, publisher, pages, isBorrowed=False) -> None:
 
         for isbn, copies in self.books.items():
             if copies and copies[0].title == title and copies[0].author == author:
@@ -23,7 +23,7 @@ class Library:
         self.books[isbn].append(book)
         print(f"Book added: ISBN {isbn}, copy_id {copy_id}")
 
-    def deleteBook(self, isbn, copy_id):
+    def deleteBook(self, isbn, copy_id) -> None:
         if isbn not in self.books:
             raise Exception(f"ISBN {isbn} not found.")
 
@@ -38,12 +38,12 @@ class Library:
 
         raise Exception(f"Copy ID {copy_id} not found for ISBN {isbn}.")
 
-    def updateBook(self, isbn, copy_id, title=None, author=None, publisher=None, pages=None, is_borrowed=None):
+    def updateBook(self, isbn,  title=None, author=None, publisher=None, pages=None, is_borrowed=None) -> None:
         if isbn not in self.books:
             raise Exception(f"ISBN {isbn} not found.")
 
         for book in self.books[isbn]:
-            if book.copy_id == copy_id:
+
                 if title is not None:
                     book.title = title
                 if author is not None:
@@ -54,14 +54,21 @@ class Library:
                     book.pages = pages
                 if is_borrowed is not None:
                     book.is_borrowed = is_borrowed
-                print(f"Updated Book: '{book.title}', copy_id {copy_id}")
+                print(f"Updated Book:{book.title}")
                 return
 
-        raise Exception(f"Copy ID {copy_id} not found for ISBN {isbn}.")
 
-    def addReader(self, firstname, lastname, address, phonenumber):
+    def addReader(self, firstname, lastname, address, phonenumber) -> None:
         id = max(self.readers.keys(), default=0) + 1
-        reader = Reader(id, firstname, lastname, address, phonenumber)
+        numer = phonenumber
+        isok = True
+        while(isok==True):
+            if(len(str(numer))!=9 ):
+                numer = int(input("Niepoprawny podany numer telefonu. Podaj ponownie: "))
+            else:
+                isok = False
+
+        reader = Reader(id, firstname, lastname, address, numer)
         self.readers[id] = reader
         print(f"Reader added: ID {id}")
 
@@ -72,7 +79,7 @@ class Library:
         else:
             raise Exception(f"Reader {id} not found.")
 
-    def updateReader(self, id, firstname=None, lastname=None, address=None, phonenumber=None):
+    def updateReader(self, id, firstname=None, lastname=None, address=None, phonenumber=None) -> None:
         if id not in self.readers:
             raise Exception(f"Reader {id} not found.")
 
@@ -89,17 +96,23 @@ class Library:
 
         print(f"Reader {id} updated.")
 
-    def borrowBook(self, reader_id, isbn,borrow_days):
+    def borrowBook(self, reader_id, isbn,borrow_days) -> None:
         if reader_id not in self.readers:
             raise Exception("Reader not found.")
         if isbn not in self.books:
             raise Exception("Book not found.")
+
+        for key, values in self.books.values().reservation.items():
+            if(key <= date.today() <= values):
+                raise Exception(f"Book {isbn} already reserved for today.")
+
 
         for book in self.books[isbn]:
             if not book.is_borrowed:
                 book.is_borrowed = True
                 book.borrow_date = date.today()
                 book.due_date = date.today() + timedelta(days=borrow_days)
+
                 self.readers[reader_id].borrow(book)
 
                 print(f"Reader {reader_id} borrowed book '{book.title}', copy_id {book.copy_id}")
@@ -108,7 +121,7 @@ class Library:
 
         raise Exception("No available copies of this book.")
 
-    def returnBook(self, reader_id, isbn, copy_id):
+    def returnBook(self, reader_id, isbn, copy_id) -> None:
         if reader_id not in self.readers:
             raise Exception("Reader not found.")
         if isbn not in self.books:
@@ -138,7 +151,16 @@ class Library:
 
         raise Exception(f"Reader did not borrow book ISBN {isbn}, copy_id {copy_id}.")
 
-    def listAvailableBooks(self):
+    def listAllReaders(self) -> None:
+        print("All readers:")
+        found = False
+        for key, value in self.readers.items():
+            print(f"{key}: {value}")
+            found = True
+        if not found:
+            print("No readers in database")
+
+    def listAvailableBooks(self) -> None:
         print("Available books:")
         found = False
         for isbn, copies in self.books.items():
@@ -150,7 +172,7 @@ class Library:
             print("No available books.")
 
 
-    def listBorrowedBooks(self):
+    def listBorrowedBooks(self) -> None:
         print("Borrowed books:")
         found = False
         for isbn, copies in self.books.items():
