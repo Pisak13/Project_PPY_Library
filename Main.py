@@ -123,3 +123,4 @@ while True:
                 print("Sorry, I don't understand that. Please try again.")
     except Exception as e:
         print(f"Error: {e}")
+    input("Press Enter to continue...")
