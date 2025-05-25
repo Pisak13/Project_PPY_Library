@@ -1,3 +1,5 @@
+from warnings import catch_warnings
+
 from Book import Book
 from Reader import Reader
 from datetime import date,timedelta
@@ -96,30 +98,32 @@ class Library:
 
         print(f"Reader {id} updated.")
 
-    def borrowBook(self, reader_id, isbn,borrow_days) -> None:
-        if reader_id not in self.readers:
-            raise Exception("Reader not found.")
-        if isbn not in self.books:
-            raise Exception("Book not found.")
+    def borrowBook(self, copy_id, reader_id, isbn,borrow_days) -> None:
 
-        for key, values in self.books.values().reservation.items():
-            if(key <= date.today() <= values):
-                raise Exception(f"Book {isbn} already reserved for today.")
+            if reader_id not in self.readers:
+                raise Exception("Reader not found.")
+            if isbn not in self.books:
+                raise Exception("Book not found.")
+
+            for key, values in self.books.get(isbn, [])[copy_id - 1].reservation.items():
+                if(key <= date.today() <= values):
+                    raise Exception(f"Book {isbn} already reserved for today.")
+
+            for book in self.books[isbn]:
+                if not book.is_borrowed:
+                    book.is_borrowed = True
+                    book.borrow_date = date.today()
+                    book.due_date = date.today() + timedelta(days=borrow_days)
+
+                    self.readers[reader_id].borrow(book)
+
+                    print(f"Reader {reader_id} borrowed book '{book.title}', copy_id {book.copy_id}")
+                    print(f"Due date: {book.due_date}")
+                    return
+
+            raise Exception("No available copies of this book.")
 
 
-        for book in self.books[isbn]:
-            if not book.is_borrowed:
-                book.is_borrowed = True
-                book.borrow_date = date.today()
-                book.due_date = date.today() + timedelta(days=borrow_days)
-
-                self.readers[reader_id].borrow(book)
-
-                print(f"Reader {reader_id} borrowed book '{book.title}', copy_id {book.copy_id}")
-                print(f"Due date: {book.due_date}")
-                return
-
-        raise Exception("No available copies of this book.")
 
     def returnBook(self, reader_id, isbn, copy_id) -> None:
         if reader_id not in self.readers:

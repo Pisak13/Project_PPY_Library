@@ -1,4 +1,7 @@
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
+
+from Book import Book
+
 
 
 class Reader:
@@ -47,6 +50,7 @@ class Reader:
     def return_book(self, book) -> None:
         self.borrowed_books.remove(book)
         self.saveOperation(book.title, "return")
+
 
 
     def __str__(self):

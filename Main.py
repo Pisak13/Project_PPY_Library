@@ -1,3 +1,5 @@
+from datetime import date, datetime
+
 from Library import Library
 from Reader import Reader
 from Book import Book
@@ -22,72 +24,102 @@ while True:
     print("14.List All Readers")
     print("15.Exit")
     option = int(input("Enter your choice: "))
-    match option:
-        case 1:
-            title = input("Enter book title: ")
-            author = input("Enter book author: ")
-            publisher = input("Enter book publisher: ")
-            pages = int(input("Enter book pages: "))
-            library.addBook(title, author, publisher, pages)
-        case 2:
-            isbn = int(input("Enter ISBN: "))
-            title = input("Enter book title or skip: ")
-            author = input("Enter book author or skip: ")
-            publisher = input("Enter book publisher or skip: ")
-            pages = input("Enter book pages: ")
-            library.updateBook(isbn, title, author, publisher, pages)
-        case 3:
-            isbn = int(input("Enter ISBN: "))
-            copy_id = int(input("Enter copy number: "))
-            library.deleteBook(isbn, copy_id)
-        case 4:
-            firstname=input("Enter first name: ")
-            lastname=input("Enter last name: ")
-            address=input("Enter address: ")
-            phonenumber=int(input("Enter phone number: "))
-            library.addReader(firstname, lastname, address, phonenumber)
-        case 5:
-            id=int(input("Enter id reader: "))
-            firstname=input("Enter first name or skip :")
-            lastname=input("Enter last name or skip :")
-            address=input("Enter address or skip :")
-            phonenumber=int(input("Enter phone number: "))
-            library.updateReader(id,firstname, lastname, address, phonenumber)
-        case 6:
-            id=int(input("Enter id: "))
-            library.deleteReader(id)
-        case 7:
-            readerid=int(input("Enter reader id: "))
-            isbn=int(input("Enter ISBN: "))
-            days=int(input("Enter days: "))
-            library.borrowBook(readerid, isbn, days)
-        case 8:
-            readerid=int(input("Enter reader id: "))
-            isbn=int(input("Enter ISBN: "))
-            copyid = int(input("Enter copy number: "))
-            library.returnBook(readerid, isbn, copyid)
-        case 9:
-            library.listAvailableBooks()
-        case 10:
-            library.listBorrowedBooks()
-        case 11:
-            readerid=int(input("Enter reader id: "))
-            Reader.showHistory(library.readers, readerid)
-        case 12:
-            copyid=int(input("Enter copy number: "))
-            isbn=int(input("Enter ISBN: "))
-            daysToExtend=int(input("Enter days to extend: "))
-            for czytacz in library.readers.values():
-                for ksiazki in czytacz.borrowed_books:
-                    if copyid == ksiazki.copy_id and isbn==ksiazki.isbn:
-                        reader = czytacz
-            reader.extend(copyid, daysToExtend)
-        case 13:
-            Book.reserve()
-        case 14:
-            library.listAllReaders()
-        case 15:
-            print("Goodbye")
-            break
-        case default:
-            print("Sorry, I don't understand that. Please try again.")
+    try:
+        match option:
+            case 1:
+                title = input("Enter book title: ")
+                author = input("Enter book author: ")
+                publisher = input("Enter book publisher: ")
+                pages = int(input("Enter book pages: "))
+                library.addBook(title, author, publisher, pages)
+            case 2:
+                isbn = int(input("Enter ISBN: "))
+                title = input("Enter book title or skip: ")
+                author = input("Enter book author or skip: ")
+                publisher = input("Enter book publisher or skip: ")
+                pages = input("Enter book pages: ")
+                library.updateBook(isbn, title, author, publisher, pages)
+            case 3:
+                isbn = int(input("Enter ISBN: "))
+                copy_id = int(input("Enter copy number: "))
+                library.deleteBook(isbn, copy_id)
+            case 4:
+                firstname=input("Enter first name: ")
+                lastname=input("Enter last name: ")
+                address=input("Enter address: ")
+                phonenumber=int(input("Enter phone number: "))
+                library.addReader(firstname, lastname, address, phonenumber)
+            case 5:
+                id=int(input("Enter id reader: "))
+                firstname=input("Enter first name or skip :")
+                lastname=input("Enter last name or skip :")
+                address=input("Enter address or skip :")
+                phonenumber=int(input("Enter phone number: "))
+                library.updateReader(id,firstname, lastname, address, phonenumber)
+            case 6:
+                id=int(input("Enter id: "))
+                library.deleteReader(id)
+            case 7:
+                readerid=int(input("Enter reader id: "))
+                isbn=int(input("Enter ISBN: "))
+                copyid = int(input("Enter copy number: "))
+                days=int(input("Enter days: "))
+                library.borrowBook(readerid, copyid, isbn, days)
+            case 8:
+                readerid=int(input("Enter reader id: "))
+                isbn=int(input("Enter ISBN: "))
+                copyid = int(input("Enter copy number: "))
+                library.returnBook(readerid, isbn, copyid)
+            case 9:
+                library.listAvailableBooks()
+            case 10:
+                library.listBorrowedBooks()
+            case 11:
+                readerid=int(input("Enter reader id: "))
+                Reader.showHistory(library.readers, readerid)
+            case 12:
+                copyid=int(input("Enter copy number: "))
+                isbn=int(input("Enter ISBN: "))
+                daysToExtend=int(input("Enter days to extend: "))
+                reader = None
+                for czytacz in library.readers.values():
+                    for ksiazki in czytacz.borrowed_books:
+                        if copyid == ksiazki.copy_id and isbn==ksiazki.isbn:
+                            reader = czytacz
+                if reader is None:
+                    print("Book is not borrowed by this reader")
+                    break
+                reader.extend(isbn,copyid, daysToExtend)
+            case 13:
+                isbn = int(input("Enter ISBN: "))
+                copyid = int(input("Enter copy number: "))
+                readerid = int(input("Enter reader id: "))
+                tekst = input("Podaj datę (DD-MM-YYYY): ")
+                data = datetime.strptime(tekst, "%d-%m-%Y").date()
+                daysToReserve = int(input("Enter days to reserve: "))
+
+                for czytacz in library.readers.values():
+                    if czytacz.id == readerid:
+                        readerr = czytacz
+                for ksiazka in library.books.get(isbn, []):
+                    if ksiazka.copy_id == copyid:
+                        book = ksiazka
+                if readerr is None:
+                    print("Reader not found")
+                    break
+                if book is None:
+                    print("Book not found")
+                    break
+                reader = library.readers.get(readerid)
+                book.reserve(reader, data, daysToReserve)
+                readerr.saveOperation(book.title, "reservation")
+
+            case 14:
+                library.listAllReaders()
+            case 15:
+                print("Goodbye")
+                break
+            case default:
+                print("Sorry, I don't understand that. Please try again.")
+    except Exception as e:
+        print(f"Error: {e}")
