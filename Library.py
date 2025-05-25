@@ -1,8 +1,11 @@
-from warnings import catch_warnings
+
 
 from Book import Book
 from Reader import Reader
 from datetime import date,timedelta
+from Exceptions import ReaderNotFoundException, IsbnNotFoundException, BookCopyNotFoundException, \
+    BookStillBorrowedException, BookNotFoundException, BookAlreadyReservedException, NoAvailableCopyBookException, \
+    ReturnException
 
 
 class Library:
@@ -27,7 +30,7 @@ class Library:
 
     def deleteBook(self, isbn, copy_id) -> None:
         if isbn not in self.books:
-            raise Exception(f"ISBN {isbn} not found.")
+            raise IsbnNotFoundException(f"ISBN {isbn} not found.")
 
         for book in self.books[isbn]:
             if book.copy_id == copy_id:
@@ -38,11 +41,11 @@ class Library:
                     del self.books[isbn]
                 return
 
-        raise Exception(f"Copy ID {copy_id} not found for ISBN {isbn}.")
+        raise BookCopyNotFoundException(f"Copy ID {copy_id} not found for ISBN {isbn}.")
 
     def updateBook(self, isbn,  title=None, author=None, publisher=None, pages=None, is_borrowed=None) -> None:
         if isbn not in self.books:
-            raise Exception(f"ISBN {isbn} not found.")
+            raise IsbnNotFoundException(f"ISBN {isbn} not found.")
 
         for book in self.books[isbn]:
 
@@ -75,15 +78,19 @@ class Library:
         print(f"Reader added: ID {id}")
 
     def deleteReader(self, id):
-        if id in self.readers:
-            del self.readers[id]
-            print(f"Reader {id} deleted.")
-        else:
-            raise Exception(f"Reader {id} not found.")
+        if id not in self.readers:
+            raise ReaderNotFoundException(f"Reader {id} not found.")
+
+        reader = self.readers[id]
+        if reader.borrowed_books:
+            raise BookStillBorrowedException(f"Cannot delete reader {id} — they still have borrowed books.")
+
+        del self.readers[id]
+        print(f"Reader {id} deleted.")
 
     def updateReader(self, id, firstname=None, lastname=None, address=None, phonenumber=None) -> None:
         if id not in self.readers:
-            raise Exception(f"Reader {id} not found.")
+            raise ReaderNotFoundException(f"Reader {id} not found.")
 
         reader = self.readers[id]
 
@@ -98,16 +105,23 @@ class Library:
 
         print(f"Reader {id} updated.")
 
-    def borrowBook(self, copy_id, reader_id, isbn,borrow_days) -> None:
+    def borrowBook(self,reader_id,copy_id,isbn,borrow_days) -> None:
 
             if reader_id not in self.readers:
-                raise Exception("Reader not found.")
+                raise ReaderNotFoundException("Reader not found.")
             if isbn not in self.books:
-                raise Exception("Book not found.")
+                raise BookNotFoundException("Book not found.")
+
+
+            copies = self.books[isbn]
+            if not (1 <= copy_id <= len(copies)):
+                raise BookCopyNotFoundException(f"Book copy with copy_id={copy_id} does not exist for ISBN {isbn}.")
+
+            book = copies[copy_id - 1]
 
             for key, values in self.books.get(isbn, [])[copy_id - 1].reservation.items():
                 if(key <= date.today() <= values):
-                    raise Exception(f"Book {isbn} already reserved for today.")
+                    raise BookAlreadyReservedException(f"Book {isbn} already reserved for today.")
 
             for book in self.books[isbn]:
                 if not book.is_borrowed:
@@ -121,15 +135,15 @@ class Library:
                     print(f"Due date: {book.due_date}")
                     return
 
-            raise Exception("No available copies of this book.")
+            raise NoAvailableCopyBookException("No available copies of this book.")
 
 
 
     def returnBook(self, reader_id, isbn, copy_id) -> None:
         if reader_id not in self.readers:
-            raise Exception("Reader not found.")
+            raise ReaderNotFoundException("Reader not found.")
         if isbn not in self.books:
-            raise Exception("Book not found.")
+            raise BookNotFoundException("Book not found.")
 
         reader = self.readers[reader_id]
 
@@ -153,7 +167,7 @@ class Library:
                 print(f"Reader {reader_id} returned book '{book.title}', copy_id {book.copy_id}")
                 return
 
-        raise Exception(f"Reader did not borrow book ISBN {isbn}, copy_id {copy_id}.")
+        raise ReturnException(f"Reader did not return book ISBN {isbn}, copy_id {copy_id}.")
 
     def listAllReaders(self) -> None:
         print("All readers:")
@@ -186,14 +200,3 @@ class Library:
                     found = True
         if not found:
             print("No borrowed books.")
-
-
-
-
-
-
-
-
-
-
-

@@ -1,7 +1,5 @@
-from datetime import date, timedelta, datetime
-
-from Book import Book
-
+from datetime import date, timedelta
+from Exceptions import ReaderNotFoundException,MaxExtendConflictException
 
 
 class Reader:
@@ -20,7 +18,7 @@ class Reader:
     @staticmethod
     def showHistory(readerdict, readerid) -> None:
         if readerid not in readerdict:
-            raise Exception("Reader not found")
+            raise ReaderNotFoundException("Reader not found")
         reader = readerdict[readerid]
         print(f"History of reader {reader.id} {reader.firstname} {reader.lastname}:")
         if not reader.history:
@@ -34,7 +32,7 @@ class Reader:
 
     def extend(self, isbn,copyid, daysToExtend):
         if (daysToExtend > 7):
-            raise Exception("Days to extend cannot be greater than 7")
+            raise MaxExtendConflictException("Days to extend cannot be greater than 7")
         for book in self.borrowed_books:
             if (book.copy_id == copyid and book.isbn == isbn):
                 book.due_date = book.due_date + timedelta(days=daysToExtend)

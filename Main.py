@@ -1,8 +1,7 @@
-from datetime import date, datetime
-
+from datetime import  datetime
 from Library import Library
 from Reader import Reader
-from Book import Book
+
 
 library = Library()
 
@@ -37,7 +36,7 @@ while True:
                 title = input("Enter book title or skip: ")
                 author = input("Enter book author or skip: ")
                 publisher = input("Enter book publisher or skip: ")
-                pages = input("Enter book pages: ")
+                pages = int(input("Enter book pages: "))
                 library.updateBook(isbn, title, author, publisher, pages)
             case 3:
                 isbn = int(input("Enter ISBN: "))
@@ -54,7 +53,10 @@ while True:
                 firstname=input("Enter first name or skip :")
                 lastname=input("Enter last name or skip :")
                 address=input("Enter address or skip :")
-                phonenumber=int(input("Enter phone number: "))
+                telephone=input("Enter phone number or skip: ")
+
+                phonenumber = int(telephone) if telephone.strip().isdigit() else None
+
                 library.updateReader(id,firstname, lastname, address, phonenumber)
             case 6:
                 id=int(input("Enter id: "))
@@ -91,6 +93,8 @@ while True:
                     break
                 reader.extend(isbn,copyid, daysToExtend)
             case 13:
+                readerr=None
+                book=None
                 isbn = int(input("Enter ISBN: "))
                 copyid = int(input("Enter copy number: "))
                 readerid = int(input("Enter reader id: "))

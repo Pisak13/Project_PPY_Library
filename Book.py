@@ -1,5 +1,6 @@
 import datetime
-from importlib import readers
+from Exceptions import  BookAlreadyReservedException, \
+    MaxRservationDaysExceededException, BookReservationConflictException
 
 
 class Book:
@@ -16,27 +17,34 @@ class Book:
         self.reservation = {}
 
 
-    def checkIfReservedOrBorrowed(self, startDate = datetime.date.today(), endDate = datetime.date.today()):
+    def checkIfReservedOrBorrowed(self, startDate = None, endDate = None):
+        if startDate is None:
+            startDate = datetime.date.today()
+        if endDate is None:
+            endDate = datetime.date.today()
         if self.borrow_date and self.due_date:
-            if (self.borrow_date <= startDate <= self.due_date):
-                raise Exception("Book cannot be reserved for the same date, when it is borrowed!")
+            if self.borrow_date <= startDate <= self.due_date:
+                raise BookReservationConflictException("Book cannot be reserved for the same date, when it is borrowed!")
 
         for key, value in self.reservation.items():
-            if (key <= startDate <= value):
-                raise Exception("Book is already reserved for this date!")
+            if key <= startDate <= value:
+                raise BookAlreadyReservedException("Book is already reserved for this date!")
 
-            if (key <= endDate <= value):
-                raise Exception("Book is already reserved for this date!")
+            if key <= endDate <= value:
+                raise BookAlreadyReservedException("Book is already reserved for this date!")
 
     def reserve(self, readerid,reservationStartDate, reservationDays) -> None:
         if reservationDays > 7:
-            raise Exception("Book cannot be reserved for more than seven days")
+            raise MaxRservationDaysExceededException("Book cannot be reserved for more than seven days")
 
         reservationDueDate = reservationStartDate + datetime.timedelta(days=reservationDays)
 
         self.checkIfReservedOrBorrowed(reservationStartDate, reservationDueDate)
 
         self.reservation[reservationStartDate] = reservationDueDate
+        print(
+            f"Book '{self.title}' (copy_id {self.copy_id}) has been reserved by reader {readerid} "
+            f"from {reservationStartDate} to {reservationDueDate}.")
 
     def __str__(self):
         return f"Book({self.title}, copy_id={self.copy_id}, borrowed={self.is_borrowed})"
